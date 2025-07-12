@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter</title>
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.min.js" integrity="sha512-rgrFBaGRHjj2cy6RtcWr21S4oSicNV/Y3qACuRZZIVdi6hGIXOKZeFTtzFFZCJ7cI4OrwbY7/FGVvaJ5hXJdJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-2xl">
+        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-900">Unit Converter</h1>
+        
+        <!-- Desktop Tabs -->
+        <div class="hidden md:block mb-6">
+            <div class="flex space-x-1 rounded-xl bg-white/50 backdrop-blur-sm p-1.5 shadow-sm">
+                <button v-for="tab in tabs" 
+                        :key="tab"
+                        @click="currentTab = tab"
+                        :class="['flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200', 
+                                currentTab === tab 
+                                    ? 'bg-indigo-500 text-white shadow-sm' 
+                                    : 'text-gray-600 hover:text-indigo-600 hover:bg-white/50']">
+                    {{ tab }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div class="md:hidden mb-6">
+            <div class="relative">
+                <button @click="isDropdownOpen = !isDropdownOpen"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/80 backdrop-blur-sm border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-all duration-200">
+                    <span class="text-sm font-medium text-gray-700">{{ currentTab }}</span>
+                    <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
+                         :class="{ 'transform rotate-180': isDropdownOpen }"
+                         fill="none" 
+                         stroke="currentColor" 
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div v-if="isDropdownOpen" 
+                     @click.away="isDropdownOpen = false"
+                     class="absolute z-50 w-full mt-2 py-1 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200">
+                    <button v-for="tab in tabs" 
+                            :key="tab"
+                            @click="currentTab = tab; isDropdownOpen = false"
+                            :class="['w-full px-4 py-2.5 text-left text-sm font-medium transition-colors duration-200',
+                                    currentTab === tab 
+                                        ? 'text-indigo-500 bg-indigo-50' 
+                                        : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50']">
+                        {{ tab }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Form -->
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 md:p-8">
+            <div class="grid gap-4">
+                <!-- First Unit Row -->
+                <div class="flex gap-3 items-center">
+                    <div class="flex-1">
+                        <template v-if="currentTab === 'Timestamp'">
+                            <div class="text-base text-gray-600 font-bold mb-2">{{ Intl.DateTimeFormat().resolvedOptions().timeZone }}</div>
+                            <div class="grid grid-cols-7 gap-1 mb-4">
+                                <div class="col-span-2 flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Year</label>
+                                    <input type="number" v-model="dateTime.year" placeholder="Year" min="1970" max="2100"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Month</label>
+                                    <input type="number" v-model="formattedMonth" placeholder="Month" min="1" max="12"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Day</label>
+                                    <input type="number" v-model="formattedDay" placeholder="Day" min="1" max="31"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Hour</label>
+                                    <input type="number" v-model="formattedHour" placeholder="Hour" min="0" max="23"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Min</label>
+                                    <input type="number" v-model="formattedMinute" placeholder="Min" min="0" max="59"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-xs text-gray-600 mb-1">Sec</label>
+                                    <input type="number" v-model="formattedSecond" placeholder="Sec" min="0" max="59"
+                                           class="px-2 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition-colors duration-200 bg-white/70 backdrop-blur-sm">
+                                </div>
+                            </div>
+                        </template>
+                        <input v-else
+                               type="number" 
+                               v-model="value1" 
+                               @input="convertFromFirst"
+                               class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 
+                                      focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                      transition-colors duration-200
+                                      bg-white/70 backdrop-blur-sm">
+                    </div>
+                    <div v-if="currentTab !== 'Timestamp'" class="w-28 flex items-center">
+                        <template v-if="currentTab === 'Temperature'">
+                            <span class="text-lg text-gray-700 font-medium">°F</span>
+                        </template>
+                        <select v-else
+                                v-model="fromUnit" 
+                                @change="convertFromFirst"
+                                class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 
+                                       focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                       transition-colors duration-200
+                                       bg-white/70 backdrop-blur-sm">
+                            <option v-for="unit in currentUnits" :key="unit" :value="unit">{{ unit }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Second Unit Row -->
+                <div class="flex gap-3 items-center">
+                    <div class="flex-1">
+                        <template v-if="currentTab === 'Timestamp'">
+                            <div class="text-base text-gray-600 font-bold mb-2">Unix</div>
+                        </template>
+                        <input type="number" 
+                               v-model="value2"
+                               @input="convertFromSecond"
+                               class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 
+                                      focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                      transition-colors duration-200
+                                      bg-white/70 backdrop-blur-sm">
+                    </div>
+                    <div v-if="currentTab !== 'Timestamp'" class="w-28 flex items-center">
+                        <template v-if="currentTab === 'Temperature'">
+                            <span class="text-lg text-gray-700 font-medium">°C</span>
+                        </template>
+                        <select v-else
+                                v-model="toUnit"
+                                @change="convertFromFirst" 
+                                class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 
+                                       focus:border-indigo-500 focus:ring focus:ring-indigo-200 
+                                       transition-colors duration-200
+                                       bg-white/70 backdrop-blur-sm">
+                            <option v-for="unit in currentUnits" :key="unit" :value="unit">{{ unit }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Conversion Details -->
+                <div class="h-8">
+                    <div v-if="currentTab === 'Timestamp' || (value1 && (currentTab !== 'Temperature' ? (fromUnit && toUnit) : true))"
+                         class="text-center text-gray-600">
+                        {{ conversionDetails }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
